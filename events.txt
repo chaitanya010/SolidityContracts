@@ -1,0 +1,15 @@
+pragma solidity ^0.5.0;
+
+contract SmartExchange {
+	event Deposit(address from, address to, uint indexed  value);
+	event Transfer(address from, address to, uint indexed value);
+
+	function deposit(address to) payable public {
+		emit Deposit(msg.sender, to, msg.value);
+	}
+
+	function transfer(address from, address payable to, uint value) payable public{
+		to.transfer(value);
+		emit Transfer(from, to, value);
+	}
+}

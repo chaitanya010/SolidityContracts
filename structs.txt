@@ -1,0 +1,33 @@
+pragma solidity ^0.4.24;
+
+contract Bank{
+    struct Account {
+        address addr;
+        uint amount;
+    }
+
+    Account public acc = Account({
+        addr: 0xc04B03065530e24dc85eeCEd77123Aa13Bbe55f7,
+        amount: 50
+    });
+
+    Account public acc2 = Account({
+        addr: 0xc04B03065530e24dc85eeCEd77123Aa13Bbe55e7,
+        amount: 10
+    });
+    
+
+    function addamount(uint _amount) public {
+        acc.amount += _amount;
+    }
+
+     function removeamount(uint _amount) public {
+        acc.amount -= _amount;
+    }
+    function transfer(uint _amount) public{
+        acc.amount += _amount;
+        acc2.amount -= _amount;
+    }
+
+
+}

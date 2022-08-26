@@ -1,0 +1,22 @@
+pragma solidity ^0.4.24;
+
+contract basictoken{
+
+    mapping(address => uint256) public balanceof;
+
+    constructor (uint initialsupply) public {
+        balanceof[msg.sender] = initialsupply;
+
+    }
+
+    function transfer (address _to , uint value) public returns (bool success) {
+
+        require(balanceof[msg.sender] >= value); //enough money
+        require(balanceof[_to] + value >= balanceof[_to]); //overflow
+        balanceof[msg.sender] -= value;
+        balanceof[_to] += value;
+        return true;
+
+    }
+
+}

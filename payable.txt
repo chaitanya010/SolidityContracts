@@ -1,0 +1,8 @@
+pragma solidity ^0.4.24;
+
+contract Sample{
+    uint public amount = 0;
+    function pay() public payable {
+        amount += msg.value;
+    }
+}

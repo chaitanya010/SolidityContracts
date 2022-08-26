@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.4;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
+contract Airdrop is ERC20("Airdrop","AD"){
+    bytes32 public root;
+    uint256 public rewardamount;
+    mapping (address => bool) claimed;
+    bytes32 public hexproof;
+    constructor(bytes32 _root,uint256 _rewardamount){
+        root = _root;
+        rewardamount = _rewardamount;
+    }
+
+    function claim (bytes32[] calldata _proof ) external {
+        require(claimed[msg.sender] == false,"Already claimed airdrop");
+        claimed[msg.sender] == true;
+        bytes32 _leaf = keccak256(abi.encodePacked(msg.sender));
+        require(MerkleProof.verify(_proof,root,_leaf),"Incorrect merkle proof");
+        _mint(msg.sender,rewardamount);
+        
+    }
+   
+}

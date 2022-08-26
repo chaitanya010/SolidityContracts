@@ -1,0 +1,196 @@
+pragma solidity ^0.4.23;
+
+contract ERC20Basic {
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address who) public view returns (uint256);
+  function transfer(address to, uint256 value) public returns (bool);
+  event Transfer(address indexed from, address indexed to, uint256 value);
+}
+
+contract ERC20 is ERC20Basic {
+  function allowance(address owner, address spender)
+    public view returns (uint256);
+
+  function transferFrom(address from, address to, uint256 value)
+    public returns (bool);
+
+  function approve(address spender, uint256 value) public returns (bool);
+  event Approval(
+    address indexed owner,
+    address indexed spender,
+    uint256 value
+  );
+}
+
+library SafeMath {
+
+  function mul(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    if (a == 0) {
+      return 0;
+    }
+    c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    return a / b;
+  }
+
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
+
+contract Crowdsale {
+  using SafeMath for uint256;
+
+  ERC20 public token;
+
+  address public wallet;
+  uint256 public rate;
+  uint256 public weiRaised;
+  mapping(address => txrecord) public userdetails;
+  struct Txdetails{
+    uint256 txid;
+    uint256 value;
+    address beneficiary;
+    uint256 unlocktime;
+    uint256 tokens;
+    bool success;
+    
+  }
+
+ struct txrecord{
+   uint256 totaltxn;
+   mapping(uint256 => Txdetails) transactions;
+ }
+
+
+  //unlocktime ,value,address(require 
+
+  //mapping(uint => mapping(uint => address)) time;
+
+  event TokenPurchase(
+    address indexed purchaser,
+    address indexed beneficiary,
+    uint256 value,
+    uint256 amount
+  );
+
+  constructor(uint256 _rate, address _wallet, ERC20 _token) public {
+    require(_rate > 0);
+    require(_wallet != address(0));
+    require(_token != address(0));
+
+    rate = _rate;
+    wallet = _wallet;
+    token = _token;
+  }
+
+
+  // function () external payable {
+  //   buyTokens(msg.sender);
+  //   // txid +=1;
+  //   // transactions[txid] = msg.sender;
+  //   // time[now]
+  // }
+  function buyTokens(address _beneficiary,uint256 _weiAmount) public payable {
+    uint256 tokens;
+    uint256 weiAmount = _weiAmount;
+    //uint256 weiAmount = msg.value;
+    //uint256 TxId;
+    uint256 count;
+    tokens = _getTokenAmount(weiAmount);
+    _preValidatePurchase(_beneficiary, weiAmount);
+    weiRaised = weiRaised.add(weiAmount);
+    count = userdetails[_beneficiary].totaltxn;
+    count +=1;
+    userdetails[_beneficiary].totaltxn = count;
+    // txdetails.beneficiary = _beneficiary;
+    // txdetails.txid = count;
+    // txdetails.value = msg.value;
+    // txdetails.unlocktime = block.timestamp + 2 minutes;
+    // txdetails.tokens = tokens;
+    // txdetails.success = false;
+
+    userdetails[_beneficiary].transactions[count].txid = count;
+    userdetails[_beneficiary].transactions[count].value = msg.value;
+    userdetails[_beneficiary].transactions[count].unlocktime = block.timestamp + 2 minutes;
+    userdetails[_beneficiary].transactions[count].tokens = tokens;
+    userdetails[_beneficiary].transactions[count].success = false;
+    //TxId +=1;
+    // TxId = txdetails[_beneficiary][TxId].txid;  
+    // TxId +=1;
+    // txdetails[_beneficiary][TxId].txid += TxId;
+    // txdetails[_beneficiary][TxId].value = msg.value;
+    // txdetails[_beneficiary][TxId].beneficiary = _beneficiary;
+    // txdetails[_beneficiary][TxId].unlocktime = block.timestamp + 2 minutes;
+    // txdetails[_beneficiary][TxId].tokens = tokens;
+    // txdetails[_beneficiary][TxId].success = false;
+    
+  }
+
+  function transactiondetails(uint256 _txid) public view returns(uint256 txid,
+    uint256 value,
+    address _beneficiary,
+    uint256 unlocktime,
+    uint256 tokens,
+    bool success) {
+    txid = _txid;
+    _beneficiary = msg.sender;
+    value = userdetails[_beneficiary].transactions[_txid].value;
+    unlocktime = userdetails[_beneficiary].transactions[_txid].unlocktime;
+    tokens = userdetails[_beneficiary].transactions[_txid].tokens;
+    success = userdetails[_beneficiary].transactions[_txid].success;
+
+  }
+
+   function withdrawtokens(uint256 _txid) public returns (bool){
+     address _beneficiary = msg.sender;
+     require(userdetails[_beneficiary].transactions[_txid].unlocktime <= now,"Wait for unlock time");
+     require(userdetails[_beneficiary].transactions[_txid].success = true,"already withdrawn");
+     uint256 _tokens;
+     uint256 weiAmount;
+     weiAmount = userdetails[_beneficiary].transactions[_txid].value;
+     _tokens = userdetails[_beneficiary].transactions[_txid].tokens;
+     userdetails[_beneficiary].transactions[_txid].success = true;
+     token.transfer(_beneficiary, _tokens);
+    emit TokenPurchase(
+      msg.sender,
+      _beneficiary,
+      weiAmount,
+      _tokens
+    );
+     _forwardFunds();
+    }
+
+
+  function _preValidatePurchase(
+    address _beneficiary,
+    uint256 _weiAmount
+  )
+    internal pure
+  {
+    require(_beneficiary != address(0));
+    require(_weiAmount > 0);
+  }
+
+  function _getTokenAmount(uint256 _weiAmount)
+    internal view returns (uint256)
+  {
+    return _weiAmount.mul(rate);
+  }
+
+  function _forwardFunds() internal  {
+    wallet.transfer(msg.value);
+  }
+}

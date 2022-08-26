@@ -1,0 +1,11 @@
+pragma solidity ^0.4.24;
+contract gettersetter{
+    string private message = "HelloMadmax";
+    function getmessage() public constant returns(string) {
+        return message;
+    }
+    function setmessage(string Newmessage) public {
+        message = Newmessage;
+    } 
+
+}

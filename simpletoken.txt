@@ -1,0 +1,29 @@
+pragma solidity ^0.8.0;
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SafeMath.sol";
+
+contract Newtoken{
+    address owner;
+    mapping(address=>uint256) public accounts;
+    using SafeMath for uint256;
+    constructor (uint256 initialsupply) public {
+        owner = msg.sender;
+        accounts[owner] = initialsupply;
+    }
+
+    function transfer (address to,uint256 value) public {
+        require(accounts[msg.sender] >= value); //checks balance
+        require(accounts[to] + value >= accounts[to]); //overflow condition
+        // accounts[msg.sender] -= value;
+        accounts[msg.sender] = accounts[msg.sender].sub(value);
+        accounts[to] += value;
+    }
+    function bal (address balx) public view returns(uint256){   //balance of eth
+        return balx.balance;  
+        
+    }
+    // function balof (address tokenown) public view returns(uint256){    // balance of token
+    //     return accounts[tokenown];
+    // }
+             
+
+}                                                   
